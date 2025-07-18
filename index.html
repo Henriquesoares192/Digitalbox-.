@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>DigitalBox - Marketplace</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DigitalBox - Login</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Bem-vindo à DigitalBox</h1>
+  <h1>Login DigitalBox</h1>
   <form id="login-form">
-    <input type="text" placeholder="Usuário" id="user" required><br>
-    <input type="password" placeholder="Senha" id="pass" required><br>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="senha" placeholder="Senha" required />
     <button type="submit">Entrar</button>
   </form>
-  <div id="admin-panel" style="display:none;">
-    <h2>Painel do Admin</h2>
-    <input type="text" id="moedas-user" placeholder="Usuário">
-    <input type="number" id="moedas-quant" placeholder="Quantidade">
-    <button onclick="adicionarMoedas()">Adicionar Moedas</button>
-    <p id="log"></p>
-  </div>
+  <p>Não tem conta? <a href="cadastro.html">Cadastre-se aqui</a></p>
+
   <script src="script.js"></script>
 </body>
 </html>
