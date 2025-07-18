@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DigitalBox - Cadastro</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Cadastro DigitalBox</h1>
+  <form id="cadastro-form">
+    <input type="text" id="nome" placeholder="Nome" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="senha" placeholder="Senha" required />
+    <button type="submit">Cadastrar</button>
+  </form>
+  <p>Já tem conta? <a href="index.html">Faça login</a></p>
+
+  <script>
+  document.getElementById('cadastro-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const nome = document.getElementById('nome').value;
+    const email = document.getElementById('email').value;
+    const senha = document.getElementById('senha').value;
+
+    const res = await fetch('/api/cadastro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email, senha })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert('Cadastro realizado com sucesso! Faça login.');
+      window.location.href = 'index.html';
+    } else {
+      alert(data.error);
+    }
+  });
+  </script>
+</body>
+</html>
