@@ -1,39 +1,81 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const loginForm = document.getElementById("login-form");
-  const mainContent = document.getElementById("main-content");
-  const moedaForm = document.getElementById("moeda-form");
-  const resultado = document.getElementById("resultado");
+const express = require('express');
+const fs = require('fs');
+const path = require('path');
 
-  // Senha de login
-  const senhaCorreta = "Henriquesenhaadminsecreta7181827";
+const app = express();
+const PORT = 3000;
+const DB_PATH = path.join(__dirname, 'banco.json');
 
-  // Login
-  loginForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const senha = document.getElementById("senha").value;
-    if (senha === senhaCorreta) {
-      loginForm.style.display = "none";
-      mainContent.style.display = "block";
-    } else {
-      alert("Senha incorreta!");
-    }
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
+function lerBanco() {
+  try {
+    return JSON.parse(fs.readFileSync(DB_PATH, 'utf-8'));
+  } catch {
+    return { usuarios: [], precosMoedas: [
+      { quantidade: 10, preco: 100 },
+      { quantidade: 20, preco: 200 },
+      { quantidade: 30, preco: 350 }
+    ], historicoCompras: [] };
+  }
+}
+
+function salvarBanco(dados) {
+  fs.writeFileSync(DB_PATH, JSON.stringify(dados, null, 2));
+}
+
+// Cadastro
+app.post('/api/cadastro', (req, res) => {
+  const dados = lerBanco();
+  const { nome, email, senha } = req.body;
+  if (dados.usuarios.find(u => u.email === email)) {
+    return res.status(400).json({ error: 'Email já cadastrado' });
+  }
+  const novoUsuario = { id: Date.now(), nome, email, senha, moedas: 0 };
+  dados.usuarios.push(novoUsuario);
+  salvarBanco(dados);
+  res.json({ success: true });
+});
+
+// Login
+app.post('/api/login', (req, res) => {
+  const dados = lerBanco();
+  const { email, senha } = req.body;
+  const user = dados.usuarios.find(u => u.email === email && u.senha === senha);
+  if (user) {
+    res.json({ success: true, user: { id: user.id, nome: user.nome, moedas: user.moedas } });
+  } else {
+    res.status(401).json({ error: 'Credenciais inválidas' });
+  }
+});
+
+// Pegar tabela de preços
+app.get('/api/precos', (req, res) => {
+  const dados = lerBanco();
+  res.json(dados.precosMoedas);
+});
+
+// Adicionar moedas (admin, senha fixa)
+app.post('/api/addMoedas', (req, res) => {
+  const dados = lerBanco();
+  const { email, quantidade, senhaAdmin } = req.body;
+  if (senhaAdmin !== "Henriquesenhaadminsecreta7181827") {
+    return res.status(403).json({ error: 'Senha admin inválida' });
+  }
+  const user = dados.usuarios.find(u => u.email === email);
+  if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+  user.moedas += Number(quantidade);
+  dados.historicoCompras.push({
+    usuarioId: user.id,
+    quantidade: Number(quantidade),
+    data: new Date().toISOString()
   });
+  salvarBanco(dados);
+  res.json({ success: true, moedas: user.moedas });
+});
 
-  // Adicionar moedas (simulação)
-  moedaForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const usuario = document.getElementById("usuario").value;
-    const quantidade = document.getElementById("quantidade").value;
-
-    resultado.innerText = `✅ ${quantidade} moedas foram adicionadas à conta de ${usuario}.`;
-    moedaForm.reset();
-  });
-
-  // Copiar QR Code PIX
-  document.getElementById("copiarPix").addEventListener("click", () => {
-    const codigoPix = document.getElementById("codigoPix").innerText;
-    navigator.clipboard.writeText(codigoPix).then(() => {
-      alert("Código Pix copiado com sucesso!");
-    });
-  });
+app.listen(PORT, () => {
+  console.log(`Servidor rodando em http://localhost:${PORT}`);
 });
