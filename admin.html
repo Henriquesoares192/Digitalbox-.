@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DigitalBox - Painel Admin</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Painel Admin</h1>
+  <form id="add-moedas-form">
+    <input type="email" id="email" placeholder="Email do usuário" required />
+    <input type="number" id="quantidade" placeholder="Quantidade de moedas" required />
+    <input type="password" id="senhaAdmin" placeholder="Senha Admin" required />
+    <button type="submit">Adicionar Moedas</button>
+  </form>
+  <p id="resultado"></p>
+
+  <script>
+  document.getElementById('add-moedas-form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const quantidade = Number(document.getElementById('quantidade').value);
+    const senhaAdmin = document.getElementById('senhaAdmin').value;
+
+    const res = await fetch('/api/addMoedas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, quantidade, senhaAdmin })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('resultado').innerText = `Moedas adicionadas com sucesso! Novo saldo: ${data.moedas}`;
+    } else {
+      document.getElementById('resultado').innerText = `Erro: ${data.error}`;
+    }
+  });
+  </script>
+</body>
+</html>
